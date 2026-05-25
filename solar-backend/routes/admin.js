@@ -28,7 +28,7 @@ const adminOnly = async (req, res, next) => {
 
 router.get('/dashboard', auth, adminOnly, async (req, res) => {
   try {
-    console.log("📊 Dashboard API hit");
+    console.log("Dashboard API hit");
 
     // Orders + Revenue
     const [[orders]] = await db.query(`
@@ -97,7 +97,7 @@ router.get('/dashboard', auth, adminOnly, async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Dashboard Error:", err);
+    console.error("Dashboard Error:", err);
     res.status(500).json({
       success: false,
       message: err.message

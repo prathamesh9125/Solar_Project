@@ -92,7 +92,7 @@ router.post('/', auth, async (req, res) => {
       message: 'Product created',
       insertId: result.insertId 
     })
-    req.io?.emit('dashboard_update');   // 🔥 ADD
+    req.io?.emit('dashboard_update');
   } catch (err) {
     res.status(500).json({ success: false, message: err.message })
   }

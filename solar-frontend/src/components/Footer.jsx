@@ -11,11 +11,6 @@ export default function Footer() {
             <p className={styles.about}>
               Maharashtra's most trusted solar installer. Powering homes & businesses with clean energy since 2015.
             </p>
-            <div className={styles.socials}>
-              {['📘','📸','🐦','▶'].map((s,i) => (
-                <a key={i} href="#" className={styles.social}>{s}</a>
-              ))}
-            </div>
           </div>
           {[
             { title: 'Services', links: ['Residential Solar','Commercial Solar','Industrial Solar','Battery Storage','AMC & Maintenance'] },

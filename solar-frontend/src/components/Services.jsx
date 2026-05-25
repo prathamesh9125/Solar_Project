@@ -1,12 +1,12 @@
 import styles from './Services.module.css'
 
 const SERVICES = [
-  { icon: '🏠', title: 'Residential Solar',  desc: '1kW–10kW rooftop solutions for homes. Net metering, battery backup & smart monitoring app included.' },
-  { icon: '🏢', title: 'Commercial Solar',   desc: '10kW–500kW systems for offices, malls & factories. Reduce OPEX drastically with solar power.' },
-  { icon: '🏭', title: 'Industrial Solar',   desc: 'Mega-scale installations above 500kW. Complete EPC services with performance guarantees.' },
-  { icon: '🔧', title: 'AMC & Maintenance',  desc: 'Annual maintenance contracts with cleaning, inverter checks and performance monitoring reports.' },
-  { icon: '📋', title: 'Subsidy Assistance', desc: 'Full support for PM Surya Ghar / MNRE government subsidy applications. We handle all paperwork.' },
-  { icon: '🔋', title: 'Battery Storage',    desc: 'Lithium-ion battery backup systems for 24/7 power availability even during grid outages.' },
+  { title: 'Residential Solar',  desc: '1kW–10kW rooftop solutions for homes. Net metering, battery backup & smart monitoring app included.' },
+  { title: 'Commercial Solar',   desc: '10kW–500kW systems for offices, malls & factories. Reduce OPEX drastically with solar power.' },
+  { title: 'Industrial Solar',   desc: 'Mega-scale installations above 500kW. Complete EPC services with performance guarantees.' },
+  { title: 'AMC & Maintenance',  desc: 'Annual maintenance contracts with cleaning, inverter checks and performance monitoring reports.' },
+  { title: 'Subsidy Assistance', desc: 'Full support for PM Surya Ghar / MNRE government subsidy applications. We handle all paperwork.' },
+  { title: 'Battery Storage',    desc: 'Lithium-ion battery backup systems for 24/7 power availability even during grid outages.' },
 ]
 
 export default function Services() {
@@ -21,7 +21,7 @@ export default function Services() {
         <div className={styles.grid}>
           {SERVICES.map(s => (
             <div key={s.title} className={styles.card}>
-              <div className={styles.icon}>{s.icon}</div>
+             
               <h3>{s.title}</h3>
               <p>{s.desc}</p>
             </div>

@@ -81,7 +81,7 @@ export default function Products() {
           {shown.map(p => (
             <div key={p.product_id} className={styles.card}>
               <div className={styles.imgBox}>
-                <span>{ICONS[p.category] || '☀'}</span>
+                {/* <span>{ICONS[p.category] || '☀'}</span> */}
               </div>
               <div className={styles.body}>
                 <span className={`badge badge-green ${styles.catBadge}`}>{p.brand || p.category}</span>
