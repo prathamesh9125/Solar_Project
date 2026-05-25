@@ -140,6 +140,7 @@ export default function AdminDashboard() {
   const [viewInstallation, setViewInstallation] = useState(null)
   const [viewPayment, setViewPayment] = useState(null)
   const [orderPaymentMethod, setOrderPaymentMethod] = useState(null) // null | 'upi' | 'card'
+  const [revenue, setRevenue] = useState({ total_revenue: 0, this_month: 0, month_change_pct: 0 })
 
   const handleViewCustomer = async (id) => {
     try {
@@ -185,8 +186,23 @@ export default function AdminDashboard() {
     toast('Invoice downloaded! 📄')
   }
 
+  const fetchRevenue = async () => {
+    try {
+      const res = await api.get('/payments/summary')
+      const d = res.data
+      setRevenue({
+        total_revenue: Number(d.total_revenue) || 0,
+        this_month: Number(d.this_month) || 0,
+        last_month: Number(d.last_month) || 0,
+        month_change_pct: Number(d.month_change_pct) || 0,
+        total_payments: Number(d.total_payments) || 0,
+      })
+    } catch (err) { console.error('Revenue fetch error:', err) }
+  }
+
   const fetchAllData = async () => {
     setLoading(true);
+    fetchRevenue();
 
     try {
       const [cust, supp, prod, ord, inst, pay, enq] = await Promise.all([
@@ -221,9 +237,17 @@ export default function AdminDashboard() {
     fetchAllData();
 
     const socket = io('http://localhost:5000');
-    socket.on('dashboard_update', () => {
-      fetchAllData();
-    });
+
+    // Refresh data on any backend event
+    const refresh = () => { fetchAllData(); };
+    socket.on('dashboard_update', refresh);
+    socket.on('product_updated', refresh);
+    socket.on('product_added', refresh);
+    socket.on('product_deleted', refresh);
+    socket.on('order_status_updated', refresh);
+    socket.on('low_stock_alert', refresh);
+    socket.on('out_of_stock_alert', refresh);
+    socket.on('payment_completed', () => { fetchRevenue(); fetchAllData(); });
 
     return () => socket.disconnect();
   }, []);
@@ -359,7 +383,16 @@ export default function AdminDashboard() {
   }
 
   const metrics = [
-    { label: 'Total Revenue', value: '₹2.4 Cr', sub: '↑ 18% this month', color: 'var(--primary)' },
+    { label: 'Total Revenue',
+      value: revenue.total_revenue >= 10000000
+        ? `₹${(revenue.total_revenue/10000000).toFixed(1)} Cr`
+        : revenue.total_revenue >= 100000
+        ? `₹${(revenue.total_revenue/100000).toFixed(1)} L`
+        : `₹${Number(revenue.total_revenue).toLocaleString('en-IN')}`,
+      sub: revenue.month_change_pct >= 0
+        ? `↑ ${revenue.month_change_pct}% this month`
+        : `↓ ${Math.abs(revenue.month_change_pct)}% this month`,
+      color: 'var(--primary)' },
     { label: 'Active Orders', value: data.orders?.filter(o => o.status !== 'installed' && o.status !== 'cancelled').length || 0, sub: '↑ 12 new this week', color: '#60A5FA' },
     { label: 'Completed Installs', value: data.installations?.filter(i => i.status === 'completed').length || 0, sub: 'Total finished', color: 'var(--accent)' },
     { label: 'Total Customers', value: data.customers?.length || 0, sub: 'Registered', color: '#A78BFA' },
@@ -784,7 +817,12 @@ Suppliers: {
                 <td>ORD-{String(p.order_id).padStart(3, '0')}</td>
                 <td><strong>{p.customer_name}</strong></td>
                 <td style={{ fontWeight: 700 }}>₹{Number(p.amount).toLocaleString('en-IN')}</td>
-                <td><span className="badge badge-blue">{p.method?.toUpperCase()}</span></td>
+                <td>{(() => {
+                  const m = (p.method || 'razorpay').toLowerCase()
+                  const colors = { upi: '#10B981', razorpay: '#6366F1', card: '#3B82F6', cash: '#F59E0B', neft: '#8B5CF6', rtgs: '#8B5CF6', cheque: '#F97316', emi: '#EC4899' }
+                  const color = colors[m] || '#6366F1'
+                  return <span style={{ background: `${color}22`, color, border: `1px solid ${color}55`, borderRadius: 6, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>{m.toUpperCase()}</span>
+                })()}</td>
                 <td className={styles.mutedCell}>{p.payment_date?.slice(0, 10)}</td>
                 <td><StatusBadge s={p.status} /></td>
               </tr>

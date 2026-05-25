@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState, createContext, useContext } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -74,12 +74,14 @@ export default function App() {
   };
 
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
+  const location = useLocation();
+  const hideNav = location.pathname === '/admin' || location.pathname === '/login';
 
   return (
     <ToastCtx.Provider value={addToast}>
       <CartCtx.Provider value={cartValue}>
-        <Navbar />
-        <CartSidebar />
+        {!hideNav && <Navbar />}
+        {!hideNav && <CartSidebar />}
 
       <Routes>
         <Route path="/" element={<HomePage />} />
