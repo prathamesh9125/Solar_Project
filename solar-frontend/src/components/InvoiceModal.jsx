@@ -1,7 +1,8 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { useToast } from '../App'
+import api from '../api/axios'
 import styles from './InvoiceModal.module.css'
 
 function fmt(n) { return Math.round(n).toLocaleString('en-IN') }
@@ -9,6 +10,8 @@ function fmt(n) { return Math.round(n).toLocaleString('en-IN') }
 export default function InvoiceModal({ result, bill, onClose }) {
   const toast  = useToast()
   const invRef = useRef(null)
+  const [emailTo, setEmailTo] = useState('')
+  const [sending, setSending] = useState(false)
   const invNo  = 'INV-2025-' + Math.floor(Math.random() * 900 + 100)
   const today  = new Date().toLocaleDateString('en-IN')
   const sizeKw = result.sizeKw.toFixed(1)
@@ -173,17 +176,52 @@ export default function InvoiceModal({ result, bill, onClose }) {
             </div>
           </div>
 
+          {/* Email input */}
+          <div style={{ padding: '0 0 12px', display: 'flex', gap: 8 }}>
+            <input
+              type="email"
+              placeholder="Enter customer email to send invoice..."
+              value={emailTo}
+              onChange={e => setEmailTo(e.target.value)}
+              style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg2)', color: 'var(--text)', fontSize: '0.88rem', outline: 'none' }}
+            />
+          </div>
           {/* Actions */}
           <div className={styles.actions}>
             <button className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} onClick={generatePDF}>
-              ⬇ Download PDF
+              Download PDF
             </button>
             <button
               className="btn-outline"
-              style={{ flex: 1, justifyContent: 'center' }}
-              onClick={() => { toast('Invoice emailed to customer!', '📧'); onClose() }}
+              style={{ flex: 1, justifyContent: 'center', opacity: sending ? 0.7 : 1 }}
+              disabled={sending}
+              onClick={async () => {
+                if (!emailTo || !emailTo.includes('@')) {
+                  toast('Please enter a valid email address')
+                  return
+                }
+                setSending(true)
+                try {
+                  await api.post('/payments/send-invoice', {
+                    email: emailTo,
+                    name: emailTo.split('@')[0],
+                    invNo,
+                    sizeKw,
+                    total: result.cost,
+                    gst: result.cost * 0.18,
+                    subsidy: result.subsidy,
+                    items,
+                  })
+                  toast(`Invoice sent to ${emailTo}`)
+                  onClose()
+                } catch (err) {
+                  toast(err.response?.data?.message || 'Failed to send email')
+                } finally {
+                  setSending(false)
+                }
+              }}
             >
-              📧 Email Invoice
+              {sending ? 'Sending...' : 'Send Invoice'}
             </button>
           </div>
         </div>

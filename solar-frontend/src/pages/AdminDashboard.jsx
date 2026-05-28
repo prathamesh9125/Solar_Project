@@ -9,8 +9,8 @@ import 'jspdf-autotable'
 
 // ─── Helpers ─────────────────────────────────────────────────
 function tabIcon(t) {
-  const icons = { Dashboard:'📊', Customers:'👥', Suppliers:'🏭', Products:'📦', Orders:'🛒', Installations:'🔧', Payments:'💳', Enquiries:'📩' }
-  return icons[t] || '📋'
+  const icons = { Dashboard:'', Customers:'', Suppliers:'', Products:'', Orders:'', Installations:'', Payments:'', Enquiries:'' }
+  return icons[t] || ''
 }
 
 const StatusBadge = ({ s }) => {
@@ -49,7 +49,7 @@ function AddModal({ title, fields, onSave, onClose, initialData }) {
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
         <div className={styles.modalHead}>
-          <h3>➕ {title}</h3>
+          <h3>{title}</h3>
           <button className={styles.closeBtn} onClick={onClose}>✕</button>
         </div>
         <div className={styles.modalBody}>
@@ -418,7 +418,7 @@ export default function AdminDashboard() {
           await api.post('/customers', rec)
           const res = await api.get('/customers')
           setData(d => ({ ...d, customers: res.data }))
-          toast("Customer added successfully! ✅", '👥')
+          toast("Customer added successfully!", <i class="bi bi-people-fill"></i>)
         } catch (err) {
           console.error(err)
           const msg = err.response?.data?.message || "Error adding customer"
@@ -644,15 +644,15 @@ Suppliers: {
               a.download = `${tab.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`
               a.click()
               URL.revokeObjectURL(url)
-              toast(`${tab} exported as CSV! ⬇`, '✅')
-            }}>⬇ Export CSV</button>
+              toast(`${tab} exported as CSV! ⬇`, <i class="bi bi-check-square-fill"></i>)
+            }}>Export CSV</button>
             {ADD_CONFIGS[tab] && (
               <button className="btn-primary" onClick={() => setAddModal(ADD_CONFIGS[tab])}>
-                ➕ Add {tab.slice(0, -1)}
+                Add {tab.slice(0, -1)}
               </button>
             )}
             <button className="btn-outline" onClick={handleLogout}>
-              🚪 Logout
+              Logout
             </button>
           </div>
         </div>
@@ -671,7 +671,7 @@ Suppliers: {
             </div>
             <div className={styles.dashGrid}>
               <div className={styles.dashCard}>
-                <h3>📦 Recent Orders</h3>
+                <h3>Recent Orders</h3>
                 <DataTable heads={['Order', 'Customer', 'Size', 'Amount', 'Status']}>
                   {data.orders?.slice(0, 5).map(o => (
                     <tr key={o.order_id}>
@@ -685,7 +685,7 @@ Suppliers: {
                 </DataTable>
               </div>
               <div className={styles.dashCard}>
-                <h3>📩 Recent Enquiries</h3>
+                <h3>Recent Enquiries</h3>
                 <DataTable heads={['Name', 'Phone', 'Service', 'Status']}>
                   {data.enquiries?.slice(0, 5).map(e => (
                     <tr key={e.enquiry_id}>
@@ -862,7 +862,7 @@ Suppliers: {
         <div className={styles.overlay} onClick={() => setViewCustomer(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHead}>
-              <h3>👤 Customer Details</h3>
+              <h3>Customer Details</h3>
               <button className={styles.closeBtn} onClick={() => setViewCustomer(null)}>✕</button>
             </div>
 
@@ -947,7 +947,7 @@ Suppliers: {
         <div className={styles.overlay} onClick={() => setViewSupplier(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHead}>
-              <h3>🏭 Supplier Details</h3>
+              <h3>Supplier Details</h3>
               <button className={styles.closeBtn} onClick={() => setViewSupplier(null)}>✕</button>
             </div>
 
@@ -1031,7 +1031,7 @@ Suppliers: {
         <div className={styles.overlay} onClick={() => setViewProduct(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHead}>
-              <h3>📦 Product Details</h3>
+              <h3>Product Details</h3>
               <button className={styles.closeBtn} onClick={() => setViewProduct(null)}>✕</button>
             </div>
 
@@ -1111,7 +1111,7 @@ Suppliers: {
         <div className={styles.overlay} onClick={() => { setViewOrder(null); setOrderPaymentMethod(null); }}>
           <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: orderPaymentMethod ? 460 : 500 }}>
             <div className={styles.modalHead}>
-              <h3>{orderPaymentMethod === 'success' ? '✅ Payment Complete' : orderPaymentMethod === 'upi' ? '📱 Pay via UPI' : orderPaymentMethod === 'choose' ? '💳 Select Payment' : '🛒 Order Details'}</h3>
+              <h3>{orderPaymentMethod === 'success' ? 'Payment Complete' : orderPaymentMethod === 'upi' ? 'Pay via UPI' : orderPaymentMethod === 'choose' ? 'Select Payment' : 'Order Details'}</h3>
               <button className={styles.closeBtn} onClick={() => { setViewOrder(null); setOrderPaymentMethod(null); }}>✕</button>
             </div>
             <div className={styles.modalBody}>
@@ -1157,7 +1157,7 @@ Suppliers: {
                       onClick={() => setOrderPaymentMethod('upi')}
                       style={{ padding: '20px 16px', borderRadius: 12, border: '2px solid rgba(16,185,129,0.4)', background: 'rgba(16,185,129,0.07)', cursor: 'pointer', color: 'var(--text)' }}
                     >
-                      <div style={{ fontSize: '2rem', marginBottom: 8 }}>📱</div>
+                      
                       <div style={{ fontWeight: 700 }}>UPI / QR Code</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>GPay, PhonePe, Paytm</div>
                     </button>
@@ -1203,7 +1203,7 @@ Suppliers: {
                       }}
                       style={{ padding: '20px 16px', borderRadius: 12, border: '2px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.07)', cursor: 'pointer', color: 'var(--text)' }}
                     >
-                      <div style={{ fontSize: '2rem', marginBottom: 8 }}>💳</div>
+                      
                       <div style={{ fontWeight: 700 }}>Card / Net Banking</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>Visa, Mastercard</div>
                     </button>
@@ -1219,7 +1219,7 @@ Suppliers: {
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>ORD-{String(viewOrder.order_id).padStart(3,'0')}</span>
                     <span style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{Number(viewOrder.total_amount).toLocaleString('en-IN')}</span>
                   </div>
-                  <div style={{ fontSize: '3.5rem', marginBottom: 12 }}>📱</div>
+                  
                   <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 8 }}>Pay via UPI</p>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 8, lineHeight: 1.6 }}>
                     Click below to open Razorpay's secure payment.<br/>
@@ -1283,7 +1283,7 @@ Suppliers: {
               {/* ── PAYMENT SUCCESS VIEW ── */}
               {orderPaymentMethod === 'success' && (
                 <div style={{ textAlign: 'center', padding: '10px 0 20px' }}>
-                  <div style={{ fontSize: '4rem', marginBottom: 12 }}>🎉</div>
+                  <div style={{ fontSize: '4rem', marginBottom: 12 }}></div>
                   <h3 style={{ color: '#10B981', fontSize: '1.3rem', marginBottom: 8 }}>Payment Successful!</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
                     Your payment has been recorded successfully.
@@ -1303,7 +1303,7 @@ Suppliers: {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Payment Method</span>
-                      <span style={{ fontWeight: 600 }}>📱 UPI</span>
+                      <span style={{ fontWeight: 600 }}>UPI</span>
                     </div>
                   </div>
                   <button
@@ -1327,7 +1327,7 @@ Suppliers: {
         <div className={styles.overlay} onClick={() => setViewEnquiry(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHead}>
-              <h3>📩 Enquiry Details</h3>
+              <h3>Enquiry Details</h3>
               <button className={styles.closeBtn} onClick={() => setViewEnquiry(null)}>✕</button>
             </div>
             <div className={styles.modalBody}>
