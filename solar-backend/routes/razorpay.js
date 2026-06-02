@@ -43,31 +43,39 @@ router.post('/init', auth, async (req, res) => {
       })
     }
 
-    // Create Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(Number(amount) * 100),
-      currency: 'INR',
-      receipt: `order_${order_id}`,
-      notes: {
-        order_id,
-        customer_id
-      }
-    })
-
-    console.log("RAZORPAY ORDER:", razorpayOrder)
-
-    // Save Razorpay order
-    await db.query(
-      `INSERT INTO razorpay_orders 
-      (order_id, razorpay_order_id, amount, status)
-      VALUES (?, ?, ?, ?)`,
-      [
-        order_id,
-        razorpayOrder.id,
-        amount,
-        'created'
-      ]
+    // ─── Reuse existing unverified Razorpay order to avoid duplicates ───
+    const [existing] = await db.query(
+      `SELECT * FROM razorpay_orders WHERE order_id = ? AND status = 'created' ORDER BY created_at DESC LIMIT 1`,
+      [order_id]
     )
+
+    let razorpayOrder = null
+
+    if (existing.length) {
+      try {
+        razorpayOrder = await razorpay.orders.fetch(existing[0].razorpay_order_id)
+        // If already paid, don't reuse
+        if (razorpayOrder.status === 'paid') razorpayOrder = null
+        else console.log("REUSING EXISTING RAZORPAY ORDER:", razorpayOrder.id)
+      } catch (e) {
+        razorpayOrder = null // expired or invalid, create fresh
+      }
+    }
+
+    if (!razorpayOrder) {
+      razorpayOrder = await razorpay.orders.create({
+        amount: Math.round(Number(amount) * 100),
+        currency: 'INR',
+        receipt: `order_${order_id}`,
+        notes: { order_id, customer_id }
+      })
+      console.log("CREATED NEW RAZORPAY ORDER:", razorpayOrder.id)
+
+      await db.query(
+        `INSERT INTO razorpay_orders (order_id, razorpay_order_id, amount, status) VALUES (?, ?, ?, ?)`,
+        [order_id, razorpayOrder.id, amount, 'created']
+      )
+    }
 
     res.json({
       success: true,
@@ -107,12 +115,7 @@ router.post('/verify', auth, async (req, res) => {
       amount
     } = req.body
 
-    // Validate fields
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({
         success: false,
         message: 'Missing payment details'
@@ -122,15 +125,12 @@ router.post('/verify', auth, async (req, res) => {
     // Generate expected signature
     const generated_signature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(
-        razorpay_order_id + "|" + razorpay_payment_id
-      )
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest('hex')
 
     console.log("GENERATED:", generated_signature)
     console.log("RECEIVED :", razorpay_signature)
 
-    // Verify signature
     if (generated_signature !== razorpay_signature) {
       return res.status(400).json({
         success: false,
@@ -138,44 +138,28 @@ router.post('/verify', auth, async (req, res) => {
       })
     }
 
-    // Save payment
+    // Save payment to DB
     const [paymentResult] = await db.query(
-      `INSERT INTO payments
-      (order_id, customer_id, amount, method, transaction_id, status)
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        order_id,
-        customer_id,
-        amount,
-        'razorpay',
-        razorpay_payment_id,
-        'completed'
-      ]
+      `INSERT INTO payments (order_id, customer_id, amount, method, transaction_id, status)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [order_id, customer_id, amount, 'razorpay', razorpay_payment_id, 'completed']
     )
 
-    // Update order status
+    // Update order status to confirmed
     await db.query(
-      `UPDATE orders
-       SET status = ?
-       WHERE order_id = ?`,
+      `UPDATE orders SET status = ? WHERE order_id = ?`,
       ['confirmed', order_id]
     )
 
-    // Update Razorpay order
+    // Update razorpay_orders table
     await db.query(
-      `UPDATE razorpay_orders
-       SET status = ?, payment_id = ?
-       WHERE razorpay_order_id = ?`,
-      [
-        'verified',
-        razorpay_payment_id,
-        razorpay_order_id
-      ]
+      `UPDATE razorpay_orders SET status = ?, payment_id = ? WHERE razorpay_order_id = ?`,
+      ['verified', razorpay_payment_id, razorpay_order_id]
     )
 
-    if (req.io) {
-      req.io?.emit('dashboard_update')
-    }
+    // ─── Emit socket events so dashboard revenue updates instantly ───
+    req.io?.emit('payment_completed')
+    req.io?.emit('dashboard_update')
 
     res.json({
       success: true,
@@ -203,16 +187,11 @@ router.post('/verify', auth, async (req, res) => {
 router.get('/:paymentId', auth, async (req, res) => {
   try {
     const [payment] = await db.query(
-      `SELECT 
-        p.*, 
-        c.name AS customer_name,
-        o.order_date
-      FROM payments p
-      JOIN customers c 
-      ON p.customer_id = c.customer_id
-      JOIN orders o 
-      ON p.order_id = o.order_id
-      WHERE p.payment_id = ?`,
+      `SELECT p.*, c.name AS customer_name, o.order_date
+       FROM payments p
+       JOIN customers c ON p.customer_id = c.customer_id
+       JOIN orders o ON p.order_id = o.order_id
+       WHERE p.payment_id = ?`,
       [req.params.paymentId]
     )
 
@@ -223,16 +202,10 @@ router.get('/:paymentId', auth, async (req, res) => {
       })
     }
 
-    res.json({
-      success: true,
-      data: payment[0]
-    })
+    res.json({ success: true, data: payment[0] })
 
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message
-    })
+    res.status(500).json({ success: false, message: err.message })
   }
 })
 

@@ -202,3 +202,19 @@
   .formGrid { grid-template-columns: 1fr; }
   .metrics  { grid-template-columns: 1fr 1fr; }
 }
+.mField label { display: block; font-size: 0.78rem; color: var(--text2); margin-bottom: 0.3rem; }
+
+/* ADD THIS */
+.mField input,
+.mField select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 600px;  /* ← changed from 500px */
+  animation: slideUp 0.25s ease;
+}

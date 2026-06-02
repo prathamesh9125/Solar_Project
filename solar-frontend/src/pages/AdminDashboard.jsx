@@ -148,7 +148,8 @@ export default function AdminDashboard() {
       setViewCustomer(res.data)
     } catch (err) {
       console.error(err)
-      toast("Error loading customer ❌")
+      toast("Error loading customer",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -183,7 +184,7 @@ export default function AdminDashboard() {
     doc.text(`Total: Rs. ${Number(order.total_amount).toLocaleString('en-IN')}`, 14, finalY + 15)
 
     doc.save(`Invoice_ORD-${String(order.order_id).padStart(3, '0')}.pdf`)
-    toast('Invoice downloaded! 📄')
+    toast('Invoice downloaded!')
   }
 
   const fetchRevenue = async () => {
@@ -227,7 +228,8 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error("API ERROR:", err.response?.data || err.message);
-      toast("Backend error or unauthorized ❌");
+      toast("Backend error or unauthorized",<i class="bi bi-x-square-fill"></i>
+);
     } finally {
       setLoading(false);
     }
@@ -284,7 +286,7 @@ export default function AdminDashboard() {
 
     console.log("DELETE RESPONSE:", res.data)
 
-    toast("Supplier deleted successfully ✅")
+    toast("Supplier deleted successfully",<i class="bi bi-check-square-fill"></i>)
 
     setViewSupplier(null)
 
@@ -294,7 +296,8 @@ export default function AdminDashboard() {
 
     console.log("DELETE ERROR:", err.response?.data || err)
 
-    toast("Delete failed ❌")
+    toast("Delete failed",<i class="bi bi-x-square-fill"></i>
+)
   }
 }
 
@@ -314,7 +317,8 @@ export default function AdminDashboard() {
 
     console.log("SUPPLIER ERROR:", err)
 
-    toast("Error loading supplier ❌")
+    toast("Error loading supplier",<i class="bi bi-x-square-fill"></i>
+)
   }
 }
 
@@ -324,7 +328,8 @@ export default function AdminDashboard() {
       setViewProduct(res.data?.data || res.data)
     } catch (err) {
       console.error(err)
-      toast("Error loading product ❌")
+      toast("Error loading product",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -334,11 +339,12 @@ export default function AdminDashboard() {
 
     try {
       await api.delete(`/products/${id}`)
-      toast("Product deleted 🗑")
+      toast("Product deleted")
       fetchAllData()
     } catch (err) {
       console.error(err)
-      toast("Cannot delete product ❌")
+      toast("Cannot delete product ",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -347,7 +353,8 @@ export default function AdminDashboard() {
       const res = await api.get(`/orders/${id}`)
       setViewOrder(res.data)
     } catch (err) {
-      toast("Error loading order ❌")
+      toast("Error loading order ",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -355,10 +362,11 @@ export default function AdminDashboard() {
     if (!window.confirm("Delete order?")) return
     try {
       await api.delete(`/orders/${id}`)
-      toast("Order deleted 🗑")
+      toast("Order deleted")
       fetchAllData()
     } catch (err) {
-      toast("Cannot delete order ❌")
+      toast("Cannot delete order ",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -367,7 +375,8 @@ export default function AdminDashboard() {
       const res = await api.get(`/enquiries/${id}`)
       setViewEnquiry(res.data)
     } catch (err) {
-      toast("Error loading enquiry ❌")
+      toast("Error loading enquiry",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -375,10 +384,11 @@ export default function AdminDashboard() {
     if (!window.confirm("Delete enquiry?")) return
     try {
       await api.delete(`/enquiries/${id}`)
-      toast("Enquiry deleted 🗑")
+      toast("Enquiry deleted")
       fetchAllData()
     } catch (err) {
-      toast("Cannot delete enquiry ❌")
+      toast("Cannot delete enquiry ",<i class="bi bi-x-square-fill"></i>
+)
     }
   }
 
@@ -422,7 +432,8 @@ export default function AdminDashboard() {
         } catch (err) {
           console.error(err)
           const msg = err.response?.data?.message || "Error adding customer"
-          toast(`${msg} ❌`)
+          toast(`${msg} `,<i class="bi bi-x-square-fill"></i>
+)
         }
       }
     },
@@ -499,7 +510,7 @@ Suppliers: {
         suppliers: res.data
       }))
 
-      toast("Supplier added successfully ✅")
+      toast("Supplier added successfully ",<i class="bi bi-check-square-fill"></i>)
 
     } catch (err) {
 
@@ -507,20 +518,12 @@ Suppliers: {
 
       toast(
         err.response?.data?.message ||
-        "Failed to add supplier ❌"
+        "Failed to add supplier ",<i class="bi bi-x-square-fill"></i>
+
       )
     }
   }
 },
-
-
-
-
-
-
-
-
-
 
 
 
@@ -542,11 +545,13 @@ Suppliers: {
           })
           const res = await api.get('/orders')
           setData(d => ({ ...d, orders: res.data }))
-          toast("Order added successfully! ✅", '🛒')
+          toast("Order added successfully!",<i class="bi bi-check-square-fill"></i>
+)
         } catch (err) {
           console.error(err)
           const msg = err.response?.data?.message || "Error adding order"
-          toast(`${msg} ❌`)
+          toast(`${msg} `,<i class="bi bi-x-square-fill"></i>
+)
         }
       }
     },
@@ -565,11 +570,13 @@ Suppliers: {
           await api.post('/enquiries', rec)
           const res = await api.get('/enquiries')
           setData(d => ({ ...d, enquiries: res.data }))
-          toast("Enquiry added successfully! ✅", '📩')
+          toast("Enquiry added successfully!",<i class="bi bi-check-square-fill"></i>
+)
         } catch (err) {
           console.error(err)
           const msg = err.response?.data?.message || "Error adding enquiry"
-          toast(`${msg} ❌`)
+          toast(`${msg} `,<i class="bi bi-x-square-fill"></i>
+)
         }
       }
     },
@@ -621,9 +628,30 @@ Suppliers: {
                 Payments: data.payments,
                 Enquiries: data.enquiries,
               }
-              const rows = tabDataMap[tab]
+
+              let rows, filename
+
+              if (tab === 'Dashboard') {
+                // Export a summary of all key metrics for the Dashboard tab
+                rows = [
+                  { metric: 'Total Revenue (INR)', value: revenue.total_revenue },
+                  { metric: 'This Month Revenue (INR)', value: revenue.this_month },
+                  { metric: 'Month Change (%)', value: revenue.month_change_pct },
+                  { metric: 'Total Payments', value: revenue.total_payments },
+                  { metric: 'Active Orders', value: data.orders?.filter(o => o.status !== 'installed' && o.status !== 'cancelled').length || 0 },
+                  { metric: 'Completed Installs', value: data.installations?.filter(i => i.status === 'completed').length || 0 },
+                  { metric: 'Total Customers', value: data.customers?.length || 0 },
+                  { metric: 'Pending Enquiries', value: data.enquiries?.filter(e => !e.is_responded).length || 0 },
+                  { metric: 'Products in Stock (units)', value: data.products?.reduce((s, p) => s + (+p.stock_quantity || 0), 0) || 0 },
+                ]
+                filename = `dashboard_summary_${new Date().toISOString().slice(0, 10)}.csv`
+              } else {
+                rows = tabDataMap[tab]
+                filename = `${tab.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`
+              }
+
               if (!rows || rows.length === 0) {
-                toast('No data to export', '⚠')
+                toast('No data to export')
                 return
               }
               const headers = Object.keys(rows[0])
@@ -641,18 +669,18 @@ Suppliers: {
               const url = URL.createObjectURL(blob)
               const a = document.createElement('a')
               a.href = url
-              a.download = `${tab.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.csv`
+              a.download = filename
               a.click()
               URL.revokeObjectURL(url)
-              toast(`${tab} exported as CSV! ⬇`, <i class="bi bi-check-square-fill"></i>)
-            }}>Export CSV</button>
+              toast(`${tab} exported as CSV!`)
+            }}><i class="bi bi-arrow-down-square-fill"></i>Export CSV</button>
             {ADD_CONFIGS[tab] && (
               <button className="btn-primary" onClick={() => setAddModal(ADD_CONFIGS[tab])}>
                 Add {tab.slice(0, -1)}
               </button>
             )}
             <button className="btn-outline" onClick={handleLogout}>
-              Logout
+              <i class="bi bi-arrow-bar-right"></i>Logout
             </button>
           </div>
         </div>
@@ -924,11 +952,13 @@ Suppliers: {
                       onSave: async (rec) => {
                         try {
                           await api.put(`/customers/${viewCustomer.customer_id}`, rec)
-                          toast("Updated ✅")
+                          toast("Updated",<i class="bi bi-check-square-fill"></i>
+)
                           setViewCustomer(null)
                           fetchAllData()
                         } catch (err) {
-                          toast("Update failed ❌")
+                          toast("Update failed",<i class="bi bi-x-square-fill"></i>
+)
                         }
                       }
                     })
@@ -1008,11 +1038,13 @@ Suppliers: {
                       onSave: async (rec) => {
                         try {
                           await api.put(`/suppliers/${viewSupplier.supplier_id}`, rec)
-                          toast("Updated ✅")
+                          toast("Updated",<i class="bi bi-check-square-fill"></i>
+)
                           setViewSupplier(null)
                           fetchAllData()
                         } catch (err) {
-                          toast("Update failed ❌")
+                          toast("Update failed ",<i class="bi bi-x-square-fill"></i>
+)
                         }
                       }
                     })
@@ -1088,11 +1120,13 @@ Suppliers: {
                       onSave: async (rec) => {
                         try {
                           await api.put(`/products/${viewProduct.product_id}`, rec)
-                          toast("Updated ✅")
+                          toast("Updated",<i class="bi bi-check-square-fill"></i>
+)
                           setViewProduct(null)
                           fetchAllData()
                         } catch (err) {
-                          toast("Update failed ❌")
+                          toast("Update failed",<i class="bi bi-x-square-fill"></i>
+)
                         }
                       }
                     })
@@ -1188,17 +1222,20 @@ Suppliers: {
                                   customer_id: viewOrder.customer_id,
                                   amount: viewOrder.total_amount
                                 })
-                                toast('Payment Successful ✅')
+                                toast('Payment Successful',<i class="bi bi-check-square-fill"></i>
+)
                                 fetchAllData()
                                 setViewOrder(null)
                               } catch (err) {
-                                toast('Payment verification failed ❌')
+                                toast('Payment verification failed',<i class="bi bi-x-square-fill"></i>
+)
                               }
                             }
                           }
                           if (window.Razorpay) { new window.Razorpay(options).open() }
                         } catch (err) {
-                          toast('Payment initialization failed ❌')
+                          toast('Payment initialization failed',<i class="bi bi-x-square-fill"></i>
+)
                         }
                       }}
                       style={{ padding: '20px 16px', borderRadius: 12, border: '2px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.07)', cursor: 'pointer', color: 'var(--text)' }}
@@ -1262,7 +1299,8 @@ Suppliers: {
                               setOrderPaymentMethod('success')
                               fetchAllData()
                             } catch (err) {
-                              toast('Payment verification failed ❌')
+                              toast('Payment verification failed',<i class="bi bi-x-square-fill"></i>
+)
                             }
                           },
                           modal: { ondismiss: () => {} },
@@ -1270,7 +1308,8 @@ Suppliers: {
                         }
                         if (window.Razorpay) { new window.Razorpay(options).open() }
                       } catch (err) {
-                        toast('Could not initiate payment ❌')
+                        toast('Could not initiate payment',<i class="bi bi-x-square-fill"></i>
+)
                       }
                     }}
                   >
@@ -1283,7 +1322,7 @@ Suppliers: {
               {/* ── PAYMENT SUCCESS VIEW ── */}
               {orderPaymentMethod === 'success' && (
                 <div style={{ textAlign: 'center', padding: '10px 0 20px' }}>
-                  <div style={{ fontSize: '4rem', marginBottom: 12 }}></div>
+                  
                   <h3 style={{ color: '#10B981', fontSize: '1.3rem', marginBottom: 8 }}>Payment Successful!</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
                     Your payment has been recorded successfully.
@@ -1371,11 +1410,11 @@ Suppliers: {
                   onClick={async () => {
                     try {
                       await api.patch(`/enquiries/${viewEnquiry.enquiry_id}/respond`, { assigned_to: 'Admin' });
-                      toast('Enquiry status updated! ✅');
+                      toast(<><span>Enquiry status updated! </span><i className="bi bi-check-square-fill" style={{color:"#22c55e"}}></i></>);
                       setViewEnquiry(null);
                       fetchAllData();
                     } catch (err) {
-                      toast('Failed to update enquiry ❌');
+                      toast(<><span>Failed to update enquiry </span><i className="bi bi-x-square-fill" style={{color:"#ef4444"}}></i></>);
                     }
                   }}
                 >

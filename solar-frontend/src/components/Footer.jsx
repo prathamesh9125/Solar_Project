@@ -13,30 +13,39 @@ export default function Footer() {
             </p>
           </div>
           {[
-            { title: 'Services', links: ['Residential Solar','Commercial Solar','Industrial Solar','Battery Storage','AMC & Maintenance'] },
-            { title: 'Company',  links: ['About Us','Gallery','Careers','Testimonials','Blog'] },
-            { title: 'Support',  links: ['FAQ','Warranty Policy','Subsidy Guide','Privacy Policy','Terms of Service'] },
+            { title: 'Services', links: [
+              { label: 'Residential Solar', href: '/#services' },
+              { label: 'Commercial Solar',  href: '/#services' },
+              { label: 'Industrial Solar',  href: '/#services' },
+            ]},
+            { title: 'Company', links: [
+              { label: 'Products', href: '/#products' },
+              { label: 'Gallery',  href: '/gallery', isLink: true },
+            ]},
+            { title: 'Support', links: [
+              { label: 'Locations', href: '/#map-section' },
+              { label: 'Contact',   href: '/#contact' },
+            ]},
           ].map(col => (
             <div key={col.title}>
               <h4>{col.title}</h4>
               <ul>
                 {col.links.map(l => (
-  <li key={l}>
-    {l === 'Gallery' ? (
-      <Link to="/gallery">{l}</Link>
-    ) : (
-      <a href="#">{l}</a>
-    )}
-  </li>
-))}
+                  <li key={l.label}>
+                    {l.isLink
+                      ? <Link to={l.href}>{l.label}</Link>
+                      : <a href={l.href}>{l.label}</a>
+                    }
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
         </div>
 
         <div className={styles.bottom}>
-          <p>© 2025 ARDOUR GREEN ENERGY. All rights reserved. Final Semester Project.</p>
-          <p className={styles.tagline}>🌞 Go Solar. Go Green. Save Big.</p>
+          <p>© 2025 ARDOUR GREEN ENERGY. All rights reserved.</p>
+          <p className={styles.tagline}>☀ Go Solar. Go Green. Save Big.</p>
         </div>
       </div>
     </footer>

@@ -129,4 +129,52 @@ router.get('/stats/revenue', async (req, res) => {
   }
 })
 
+
+// DELETE order — also removes linked payments, razorpay_orders, order_items
+router.delete('/:id', async (req, res) => {
+  const conn = await db.pool.getConnection()
+  try {
+    await conn.beginTransaction()
+
+    // Check order exists
+    const [order] = await conn.query('SELECT * FROM orders WHERE order_id = ?', [req.params.id])
+    if (!order.length) {
+      await conn.rollback()
+      return res.status(404).json({ message: 'Order not found' })
+    }
+
+    // Delete linked payments
+    await conn.query('DELETE FROM payments WHERE order_id = ?', [req.params.id])
+
+    // Delete linked razorpay_orders (if table exists)
+    try {
+      await conn.query('DELETE FROM razorpay_orders WHERE order_id = ?', [req.params.id])
+    } catch (e) { /* table may not exist, skip */ }
+
+    // Delete linked installations
+    try {
+      await conn.query('DELETE FROM installations WHERE order_id = ?', [req.params.id])
+    } catch (e) { /* skip */ }
+
+    // Delete order items
+    await conn.query('DELETE FROM order_items WHERE order_id = ?', [req.params.id])
+
+    // Finally delete the order
+    await conn.query('DELETE FROM orders WHERE order_id = ?', [req.params.id])
+
+    await conn.commit()
+
+    req.io?.emit('dashboard_update')
+    req.io?.emit('payment_completed') // refresh revenue
+
+    res.json({ message: 'Order and all linked records deleted successfully' })
+  } catch (err) {
+    await conn.rollback()
+    res.status(500).json({ message: err.message })
+  } finally {
+    conn.release()
+  }
+})
+
 module.exports = router
+// This line intentionally left blank
