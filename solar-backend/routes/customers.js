@@ -29,20 +29,62 @@ router.get('/:id', async (req, res) => {
 // POST create customer
 router.post('/', async (req, res) => {
   const { name, email, phone, address, city, state, pincode, property_type } = req.body
+
+  // Field presence validation
   if (!name || !email || !phone) {
     return res.status(400).json({ message: 'Name, email and phone are required' })
   }
+
+  // Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Invalid email format' })
+  }
+
+  // Phone length validation — DB column is VARCHAR(15)
+  const cleanPhone = String(phone).trim()
+  if (cleanPhone.length > 15) {
+    return res.status(400).json({ message: 'Phone number must be 15 characters or fewer' })
+  }
+
+  // property_type must match the ENUM or fall back to default
+  const validPropertyTypes = ['residential', 'commercial', 'industrial']
+  const resolvedPropertyType = validPropertyTypes.includes(property_type)
+    ? property_type
+    : 'residential'
+
   try {
     const [result] = await db.query(
       `INSERT INTO customers (name, email, phone, address, city, state, pincode, property_type)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, address, city, state || 'Maharashtra', pincode, property_type || 'residential']
+      [
+        String(name).trim(),
+        String(email).trim().toLowerCase(),
+        cleanPhone,
+        address || null,
+        city || null,
+        state || 'Maharashtra',
+        pincode || null,
+        resolvedPropertyType
+      ]
     )
     const [newRow] = await db.query('SELECT * FROM customers WHERE customer_id = ?', [result.insertId])
     res.status(201).json(newRow[0])
   } catch (err) {
-    if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'Email already exists' })
-    res.status(500).json({ message: err.message })
+    // Duplicate email
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'A customer with this email already exists' })
+    }
+    // Data too long for a column
+    if (err.code === 'ER_DATA_TOO_LONG') {
+      return res.status(400).json({ message: 'One or more fields exceed the allowed length' })
+    }
+    // ENUM value mismatch
+    if (err.code === 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD') {
+      return res.status(400).json({ message: 'Invalid property type value' })
+    }
+    // Always return the real MySQL error so it's visible in the UI during debugging
+    res.status(500).json({ message: err.message || 'Database error while creating customer' })
   }
 })
 

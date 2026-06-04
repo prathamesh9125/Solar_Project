@@ -14,6 +14,8 @@ import AdminLogin from "./pages/AdminLogin";
 import Toast from "./components/Toast";
 import Gallery from './pages/Gallery';
 import CartSidebar from "./components/CartSidebar";
+import PlaceOrder from "./pages/PlaceOrder";
+
 
 
 export const ToastCtx = createContext(null);
@@ -84,18 +86,15 @@ export default function App() {
         {!hideNav && <CartSidebar />}
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
-
-        {/* LOGIN */}
-        <Route path="/login" element={<AdminLogin setIsAuth={setIsAuth} />} />
-
-        <Route
-          path="/admin"
-          element={isAuth ? <AdminDashboard /> : <Navigate to="/login" />}
-        />
-        <Route path="/gallery" element={<Gallery />} />
-      </Routes>
-
+            <Route path="/" element={<HomePage />} />
+            <Route path="/place-order" element={<PlaceOrder />} />
+            <Route path="/login" element={<AdminLogin setIsAuth={setIsAuth} />} />
+            <Route
+                path="/admin"
+                element={isAuth ? <AdminDashboard /> : <Navigate to="/login" />}
+  />
+            <Route path="/gallery" element={<Gallery />} />
+    </Routes>
       <Toast toasts={toasts} />
       </CartCtx.Provider>
     </ToastCtx.Provider>
