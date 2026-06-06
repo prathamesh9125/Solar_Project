@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import styles from './Navbar.module.css'
 import { useCart } from '../App'
+import UserAuthButton from './UserAuthButton'
 
 const links = [
   { label: 'Services',   href: '/#services' },
@@ -42,8 +43,7 @@ export default function Navbar() {
             <a href={l.href} onClick={() => handleNav(l.href)}>{l.label}</a>
           </li>
         ))}
-
-         <li>
+        <li>
           <Link to="/gallery" onClick={() => setOpen(false)} className={isAdmin ? styles.activeLink : ''}>
             Gallary
           </Link>
@@ -53,7 +53,6 @@ export default function Navbar() {
             Admin
           </Link>
         </li>
-       
       </ul>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -68,6 +67,7 @@ export default function Navbar() {
             </span>
           )}
         </button>
+        <UserAuthButton />
         <Link to="/#contact" className={styles.cta} onClick={() => handleNav('/#contact')}>
           Get Free Quote
         </Link>

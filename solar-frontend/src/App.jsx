@@ -11,12 +11,12 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import UserLogin from "./pages/UserLogin";
 import Toast from "./components/Toast";
 import Gallery from './pages/Gallery';
 import CartSidebar from "./components/CartSidebar";
 import PlaceOrder from "./pages/PlaceOrder";
-
-
+import { AuthProvider } from "./context/AuthContext";
 
 export const ToastCtx = createContext(null);
 export function useToast() {
@@ -77,26 +77,30 @@ export default function App() {
 
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem("token"));
   const location = useLocation();
-  const hideNav = location.pathname === '/admin' || location.pathname === '/login';
+  const hideNav = location.pathname === '/admin' || location.pathname === '/login' || location.pathname === '/user-login';
 
   return (
-    <ToastCtx.Provider value={addToast}>
-      <CartCtx.Provider value={cartValue}>
-        {!hideNav && <Navbar />}
-        {!hideNav && <CartSidebar />}
+    <AuthProvider>
+      <ToastCtx.Provider value={addToast}>
+        <CartCtx.Provider value={cartValue}>
+          {!hideNav && <Navbar />}
+          {!hideNav && <CartSidebar />}
 
-      <Routes>
+          <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/place-order" element={<PlaceOrder />} />
             <Route path="/login" element={<AdminLogin setIsAuth={setIsAuth} />} />
+            <Route path="/user-login" element={<UserLogin />} />
             <Route
-                path="/admin"
-                element={isAuth ? <AdminDashboard /> : <Navigate to="/login" />}
-  />
+              path="/admin"
+              element={isAuth ? <AdminDashboard /> : <Navigate to="/login" />}
+            />
             <Route path="/gallery" element={<Gallery />} />
-    </Routes>
-      <Toast toasts={toasts} />
-      </CartCtx.Provider>
-    </ToastCtx.Provider>
+          </Routes>
+
+          <Toast toasts={toasts} />
+        </CartCtx.Provider>
+      </ToastCtx.Provider>
+    </AuthProvider>
   );
 }

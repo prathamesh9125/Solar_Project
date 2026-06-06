@@ -65,6 +65,7 @@ const installationRoutes = require("./routes/installations");
 const adminRoutes = require("./routes/admin");
 const authRoutes = require("./routes/auth");
 const razorpayRoutes = require("./routes/razorpay");
+const userAuthRoutes = require("./routes/userAuth");
 
 // Register API routes
 app.use("/api/products", productRoutes);
@@ -78,6 +79,7 @@ app.use("/api/suppliers", supplierRoutes);
 app.use("/api/installations", installationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userAuthRoutes);
 app.use("/api/razorpay", razorpayRoutes);
 
 // 404 handler

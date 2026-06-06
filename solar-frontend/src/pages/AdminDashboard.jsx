@@ -9,7 +9,7 @@ import 'jspdf-autotable'
 
 // ─── Helpers ─────────────────────────────────────────────────
 function tabIcon(t) {
-  const icons = { Dashboard:'', Customers:'', Suppliers:'', Products:'', Orders:'', Installations:'', Payments:'', Enquiries:'' }
+  const icons = { Dashboard:'', Customers:'', Suppliers:'', Products:'', Orders:'', Installations:'', Payments:'', Enquiries:'', Users:'' }
   return icons[t] || ''
 }
 
@@ -22,7 +22,7 @@ const StatusBadge = ({ s }) => {
   return <span className={`badge ${map[s] || 'badge-amber'}`}>{s?.replace('_',' ')}</span>
 }
 
-const TABS = ['Dashboard','Customers','Suppliers','Products','Orders','Installations','Payments','Enquiries']
+const TABS = ['Dashboard','Customers','Suppliers','Products','Orders','Installations','Payments','Enquiries','Users']
 
 // ─── Reusable Table Wrapper ───────────────────────────────────
 function DataTable({ heads, children, loading }) {
@@ -129,6 +129,7 @@ export default function AdminDashboard() {
     installations: [],
     payments: [],
     enquiries: [],
+    users: [],
   })
   const [loading, setLoading] = useState(false)
   const [addModal, setAddModal] = useState(null)
@@ -206,7 +207,8 @@ export default function AdminDashboard() {
     fetchRevenue();
 
     try {
-      const [cust, supp, prod, ord, inst, pay, enq] = await Promise.all([
+      const token = localStorage.getItem('token');
+      const [cust, supp, prod, ord, inst, pay, enq, usr] = await Promise.all([
         api.get('/customers'),
         api.get('/suppliers'),
         api.get('/admin/products'),
@@ -214,6 +216,7 @@ export default function AdminDashboard() {
         api.get('/installations'),
         api.get('/payments'),
         api.get('/enquiries'),
+        api.get('/user/all', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       setData({
@@ -224,6 +227,7 @@ export default function AdminDashboard() {
         installations: inst.data || [],
         payments: pay.data || [],
         enquiries: enq.data || [],
+        users: usr.data?.users || [],
       });
 
     } catch (err) {
@@ -589,7 +593,7 @@ Suppliers: {
         <Link to="/" className={styles.sideLogoWrap}>
           <div className={styles.sideLogo}>☀</div>
           <div>
-            <div className={styles.sideLogoText}>SolarTech Pro</div>
+            <div className={styles.sideLogoText}>Ardour Green Energy</div>
             <div className={styles.sideLogoSub}>Admin Panel</div>
           </div>
         </Link>
@@ -878,6 +882,40 @@ Suppliers: {
                 </td>
                 <td>
                   <button className={styles.actionBtn} onClick={() => handleViewEnquiry(e.enquiry_id)}>View</button>
+                </td>
+              </tr>
+            ))}
+          </DataTable>
+        )}
+
+        {tab === 'Users' && (
+          <DataTable loading={loading} heads={['ID', 'Name', 'Email', 'Phone', 'Status', 'Registered On', 'Action']}>
+            {data.users?.map(u => (
+              <tr key={u.user_id}>
+                <td className={styles.idCell}>USR-{String(u.user_id).padStart(3, '0')}</td>
+                <td><strong>{u.name}</strong></td>
+                <td className={styles.mutedCell}>{u.email}</td>
+                <td>{u.phone || '—'}</td>
+                <td><StatusBadge s={u.is_active ? 'active' : 'inactive'} /></td>
+                <td className={styles.mutedCell}>{u.created_at?.slice(0, 10)}</td>
+                <td>
+                  <button
+                    className={styles.actionBtn}
+                    style={{ background: u.is_active ? '#EF444420' : '#10B98120', color: u.is_active ? '#EF4444' : '#10B981' }}
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem('token');
+                        await api.patch(`/user/${u.user_id}/toggle`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                        setData(prev => ({
+                          ...prev,
+                          users: prev.users.map(x => x.user_id === u.user_id ? { ...x, is_active: x.is_active ? 0 : 1 } : x)
+                        }));
+                        addToast(u.is_active ? 'User deactivated' : 'User activated', u.is_active ? '🚫' : '✅');
+                      } catch { addToast('Failed to update user', '❌'); }
+                    }}
+                  >
+                    {u.is_active ? 'Deactivate' : 'Activate'}
+                  </button>
                 </td>
               </tr>
             ))}
